@@ -48,8 +48,8 @@
 // between 0.8 and 1.2 times the basic period. Implementations SHOULD set a default interval of 5
 // seconds, resulting in a period between checks of 4 to 6 seconds. Implementations MUST NOT set the
 // period between checks to less than 4 seconds.
-#define MIN_CONSENT_CHECK_PERIOD 4000 // msecs
-#define MAX_CONSENT_CHECK_PERIOD 6000 // msecs
+#define MIN_CONSENT_CHECK_PERIOD 12000 // msecs
+#define MAX_CONSENT_CHECK_PERIOD 18000 // msecs
 
 // Nomination timeout for the controlling agent to settle for the selected pair
 #define NOMINATION_TIMEOUT 2000
