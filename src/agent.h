@@ -33,23 +33,23 @@
 
 // RFC 8445: Agents SHOULD use a Tr value of 15 seconds. Agents MAY use a bigger value but MUST NOT
 // use a value smaller than 15 seconds.
-#define STUN_KEEPALIVE_PERIOD 15000 // msecs
+#define STUN_KEEPALIVE_PERIOD 155000 // msecs
 
 // ICE Patiently Awaiting Connectivity timer
 // RFC 8863: The RECOMMENDED duration for the PAC timer is equal to the agent's connectivity check
 // transaction timeout, including all retransmissions.
-#define ICE_PAC_TIMEOUT 39500 // msecs
+#define ICE_PAC_TIMEOUT 60000 // msecs
 
 // Consent freshness
-// RFC 7675: Consent expires after 30 seconds.
-#define CONSENT_TIMEOUT 30000 // msecs
+// RFC 7675: Consent expires after 55 seconds.
+#define CONSENT_TIMEOUT 55000 // msecs
 
 // RFC 7675: To prevent synchronization of consent checks, each interval MUST be randomized from
 // between 0.8 and 1.2 times the basic period. Implementations SHOULD set a default interval of 5
 // seconds, resulting in a period between checks of 4 to 6 seconds. Implementations MUST NOT set the
 // period between checks to less than 4 seconds.
-#define MIN_CONSENT_CHECK_PERIOD 12000 // msecs
-#define MAX_CONSENT_CHECK_PERIOD 18000 // msecs
+#define MIN_CONSENT_CHECK_PERIOD 32000 // msecs
+#define MAX_CONSENT_CHECK_PERIOD 48000 // msecs
 
 // Nomination timeout for the controlling agent to settle for the selected pair
 #define NOMINATION_TIMEOUT 2000
