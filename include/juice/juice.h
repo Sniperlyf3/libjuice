@@ -99,6 +99,11 @@ typedef struct juice_config {
 
 	void *user_ptr;
 
+	int stun_keepalive_period;
+	int ice_pac_timeout;
+	int consent_timeout;
+	int consent_check_period;
+
 } juice_config_t;
 
 JUICE_EXPORT juice_agent_t *juice_create(const juice_config_t *config);
