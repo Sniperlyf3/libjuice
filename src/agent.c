@@ -103,6 +103,11 @@ juice_agent_t *agent_create(const juice_config_t *config) {
 	agent->config.cb_gathering_done = config->cb_gathering_done;
 	agent->config.cb_recv = config->cb_recv;
 	agent->config.user_ptr = config->user_ptr;
+	agent->config.stun_keepalive_period = config->stun_keepalive_period ? config->stun_keepalive_period : STUN_KEEPALIVE_PERIOD;
+	agent->config.consent_timeout = config->consent_timeout ? config->consent_timeout : CONSENT_TIMEOUT;
+	agent->config.consent_check_period = config->consent_check_period ? config->consent_check_period : ((MIN_CONSENT_CHECK_PERIOD + MAX_CONSENT_CHECK_PERIOD) / 2);
+	agent->config.ice_pac_timeout = config->ice_pac_timeout ? config->ice_pac_timeout : ICE_PAC_TIMEOUT;
+
 	if (alloc_failed) {
 		JLOG_FATAL("Memory allocation for configuration copy failed");
 		goto error;
@@ -958,7 +963,7 @@ int agent_bookkeeping(juice_agent_t *agent, timestamp_t *next_timestamp) {
 
 			if (ret < 0) {
 				JLOG_WARN("Sending keepalive failed");
-				agent_arm_transmission(agent, entry, STUN_KEEPALIVE_PERIOD);
+				agent_arm_transmission(agent, entry, agent->config.stun_keepalive_period);
 				continue;
 			}
 
@@ -1488,7 +1493,7 @@ int agent_process_stun_binding(juice_agent_t *agent, const stun_message_t *msg,
 				                                           ICE_CANDIDATE_TYPE_UNKNOWN);
 
 			// Update consent timestamp
-			pair->consent_expiry = current_timestamp() + CONSENT_TIMEOUT;
+			pair->consent_expiry = current_timestamp() + agent->config.stun_keepalive_period;
 
 			// RFC 8445 7.3.1.5. Updating the Nominated Flag:
 			// [...] once the check is sent and if it generates a successful response, and
@@ -2404,17 +2409,19 @@ void agent_arm_keepalive(juice_agent_t *agent, agent_stun_entry_t *entry) {
 	timediff_t period;
 	switch (entry->type) {
 	case AGENT_STUN_ENTRY_TYPE_RELAY:
-		period = agent->remote.candidates_count > 0 ? TURN_REFRESH_PERIOD : STUN_KEEPALIVE_PERIOD;
+		period = agent->remote.candidates_count > 0 ? TURN_REFRESH_PERIOD : agent->config.stun_keepalive_period;
 		break;
 	case AGENT_STUN_ENTRY_TYPE_SERVER:
-		period = STUN_KEEPALIVE_PERIOD;
+		period = agent->config.stun_keepalive_period;
 		break;
 	default:
 #if JUICE_DISABLE_CONSENT_FRESHNESS
 		period = STUN_KEEPALIVE_PERIOD;
 #else
-		period = MIN_CONSENT_CHECK_PERIOD +
-		         juice_rand32() % (MAX_CONSENT_CHECK_PERIOD - MIN_CONSENT_CHECK_PERIOD + 1);
+		int min_consent_check_period = round(0.8 * agent->config.consent_check_period);
+		int max_consent_check_period = round(1.2 * agent->config.consent_check_period);
+		period = min_consent_check_period +
+		         juice_rand32() % (max_consent_check_period - min_consent_check_period + 1);
 #endif
 		break;
 	}
@@ -2464,7 +2471,7 @@ void agent_update_pac_timer(juice_agent_t *agent) {
 	// mentioned above.
 	if (*agent->remote.ice_ufrag != '\0' && agent->gathering_done) {
 		JLOG_INFO("Connectivity timer started");
-		agent->pac_timestamp = current_timestamp() + ICE_PAC_TIMEOUT;
+		agent->pac_timestamp = current_timestamp() + agent->config.ice_pac_timeout;
 	}
 }
 
